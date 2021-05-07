@@ -5,6 +5,7 @@ $mydb = new db(); // สร้าง object ใหม่ , class db()
 
 $conn = $mydb->connect();
 
+print_r($_POST);
 $rpp =10;
 
 echo '<div>';
@@ -30,6 +31,7 @@ $q = $_POST["query"];
 	
 $results = $conn->prepare("SELECT * FROM invoice WHERE email LIKE '%" . $q . "%'
 OR name LIKE '%".$q."%'
+OR invoice_id LIKE '%".$q."%'
 OR title LIKE '%".$q."%'
 OR address LIKE '%".$q."%'
 OR organization LIKE '%".$q."%'
