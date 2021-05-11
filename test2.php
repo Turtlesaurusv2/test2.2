@@ -1,118 +1,243 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-<style>
-div {
-  height: 50px;
-  width: 50%;
-  margin: auto;
-}
+    <style>
+    div {
 
-table {
-  border-collapse: collapse;
-  width: 100%;
-}
+        margin: auto;
+    }
 
-th, td {
-  text-align: left;
-  padding: 8px;
-}
+    table {
 
-tr:nth-child(even) {background-color: #f2f2f2;}
+        width: 100%;
+        height: 120%;
+    }
 
-</style>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-bootpag/1.0.4/jquery.bootpag.min.js"></script>
+    button {
+        width: 100%;
+        height: 100%;
+    }
+
+    .ss {
+        text-align: left;
+        padding: 8px;
+        width: 300px;
+    }
+
+    th,
+    td {
+        text-align: left;
+        padding: 8px;
+        height: 50px;
+        border: 1px solid;
+    }
+
+
+    tr:nth-child(even) {
+        background-color: white;
+    }
+    </style>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-    <title>test2</title>
-<?php
-
-include('db_conn.php'); // call db.class.php
-$mydb = new db(); // create a new object, class db()
-
-?>
-
-<script type="text/javascript">
-$(document).ready(function(){
-
-load_data();
-
-function load_data(query)
-{
-  var tod = {query};
- $.ajax({
-  url:"test2-check.php",
-  method:"POST",
-  data:{query:query},
-  success:function(data)
-  {
-   $('#result').html(data);
-  }
-
- });
- $(document).on('click', '.pagination_link', function(){
-           var page = $(this).attr("id");
-           load_data(page);
-           
-});
-
-}
-
-$('#search_text').keyup(function(){
- var search = $(this).val();
- if(search != '')
- {
-  load_data(search);
- }
- else
- {
-  load_data();
- }
-});
-});
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootpag/1.0.7/jquery.bootpag.min.js">
+    </script>
 
 
-</script>
-</head>
-<body>
-</br>
+    <script type="text/javascript">
+    $(document).ready(function() {
 
-<div class="w3-container " >
-<input class="w3-input w3-border" type="text" name="search_text" id="search_text" placeholder="Search " />
-</div>
-<br>
+        load_data();
 
+        //สร้าง function รับค่าจาก search_text
+        $('#search_text').keyup(function() {
+            //ประกาศตัวแปร
+            var search = $(this).val();
 
+            if (search != '') {
+                load_data(search);
+            } else {
+                load_data();
+            }
 
-<script>
-function send(id){
+        });
 
-    var x = document.getElementById("invoiceBody"+id);
-       // ajax
-    $.ajax({
-      url: "getinv.php",
-      type: "POST",
-			data: 'id='+id,
-			success:function(data){
-      if (x.style.display === "none") {
-      x.style.display = "block";
-      $("#invoiceBody"+id).html(data)
-      } else {
-      x.style.display = "none";
-      }
+    });
+
+    function createPagination(current, page) {
+        // แก้ไข เรียกซ้ำซ้อน
+        $("#page-selection").unbind();
+
+        $('#page-selection').bootpag({
+            total: page, //หน้า  page ทั้งหมด
+            page: current, //แสดงหน้าปัจจุบัน
+            maxVisible: 6, //จำนวน max หน้า page
+            leaps: false,
+            next: 'next',
+            prev: 'prev'
+
+        }).on('page', function(event, num) {
+
+            var search_text = $("#search_text").val();
+
+            console.log(num);
+
+            load_data(search_text, num);
+
+        });
 
     }
-  });
-                
-}
-</script>
 
-<div class="table-responsive" id="result"></div>
+    function load_data(query = "", page = 1) {
+        //ประกาศตัวแปร object 
+        var data = {};
+        data["query"] = query;
+        data["page"] = page;
+        //ประกาศตัวแปรjson ช
+        var query = JSON.stringify(data);
+
+        $.ajax({
+            url: "test2-check.php",
+            method: "POST",
+            async: false,
+            data: {
+                "query": query
+            },
+            dataType: "json",
+            success: function(res) {
+
+                var result = res.result;
+
+                var html = "";
+                result.forEach(ele => {
+
+                    html += "<tr>" +
+                        "<td>" + ele.invoice_id + "</td>" +
+                        "<td>" + ele.invoice_number + "</td>" +
+                        "<td>" + ele.company_format + "</td>" +
+                        "<td>" + ele.name + "</td>" +
+                        "<td>" + ele.organization + "</td>" +
+                        "<td>" + ele.address + "</td>" +
+                        "<td>" + ele.create_dt + "</td>" +
+                        "<td ><button onclick='send(" + ele.invoice_id +
+                        ");' type='button'  name='butsave' id='show' >" +
+                        "<i class='fas fa-plus'></i></button>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr class='ss' colspan='5' id='invoiceBody" + ele.invoice_id +
+                        "' style='display:none' bgcolor='#FFFF99'>" +
+                        "<th colspan='5' id ='invoiceBody" + ele.invoice_id +
+                        "' bgcolor='#FFFF99'>" +
+                        "</th>" +
+                        "</tr>";
+                });
+
+                $("#result").html(html);
+                // load button
+                createPagination(res.currentPage, res.page);
+
+            }
+
+        });
+
+    }
+    //รับค่ามาจาก getinv เมื่อกดปุ่มมันจะแสดงข้อมูลตัวลูก
+    function send(id) {
+
+        var x = document.getElementById("invoiceBody" + id);
+
+        // ajax
+        $.ajax({
+            url: "getinv.php",
+            type: "POST",
+            data: 'id=' + id,
+            dataType: 'json',
+            success: function(data) {
+
+                //ประกาศตัวแปรเพื่อดเอาข้อมลที่ส่งมา มาใช้งาน
+                var rsp = data.res;
+
+                if (x.style.display == "none") {
+
+                    x.style.display = "block";
+
+                    var html = "";
+
+                    if (rsp == "") {
+
+                        html = "ไม่มีข้อมูล";
+
+                    } else {
+
+                        rsp.forEach(ele => {
+
+                            html +=
+                                "<br> item_id: " + ele.item_id + " <br>" +
+                                "description: " + ele.description + " <br>" +
+                                "price: " + ele.price + "<br>" +
+                                "quantity: " + ele.quantity + "<br>" +
+                                "vat: " + ele.vat + "<br>" +
+                                "before_vat: " + ele.before_vat + "<br>" +
+                                "total: " + ele.total +
+                                "<br>-----------------------------------<br>";
+                        });
+                    }
+
+                    $("#invoiceBody" + id).html(html)
+
+                } else {
+                    x.style.display = "none";
+                }
+
+            }
+        });
+
+    }
+    </script>
+
+</head>
+
+<body>
+
+    </br>
+    <div class="w3-container">
+
+        <div><input class=" ser w3-input w3-border" type="text" name="search_text" id="search_text"
+                placeholder="Search ">
+        </div>
+        <br>
+
+        <table style="padding-top:10px">
+            <thead>
+                <tr>
+                    <th>invoice_id</th>
+                    <th>invoice_number</th>
+                    <th>company_format</th>
+                    <th>name</th>
+                    <th>organization</th>
+                    <th>address</th>
+                    <th>create_dt</th>
+                    <th>more_info</th>
+                </tr>
+                </thesd>
+            <tbody id="result"></tbody>
+        </table>
+
+        <tbody colspan="5" id="invoiceBody"> </tbody>
 
 
+
+
+        <div id="page-selection"></div>
+
+    </div>
 
 </body>
+
 </html>

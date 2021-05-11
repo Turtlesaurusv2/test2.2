@@ -19,8 +19,6 @@ class db {
         $this->connect();
     }
  
-
-
     function connect() {
         if (!$this->conn) {
             try {
